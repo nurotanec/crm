@@ -89,6 +89,19 @@
           },
         ];
 
+  const printBD = arr => {
+    arr.forEach((item) => {
+      const arr = [...item.children];
+      console.log('№', arr[0].innerText);
+      console.log('Наименование: ', arr[1].lastChild.textContent.trim());
+      console.log('Категория: ', arr[2].innerText);
+      console.log('Ед/изм: ', arr[3].innerText);
+      console.log('Количество: ', arr[4].innerText);
+      console.log('Цена: ', arr[5].innerText);
+      console.log('Итог: ', arr[6].innerText);
+    });
+  };
+
   const init = () => {
     renderGoods(goods);
 
@@ -97,19 +110,29 @@
     const form = document.querySelector('.overlay__modal');
     const addButton = document.querySelector('.panel__add-goods');
     const closeButton = document.querySelector('.modal__close');
+    const list = document.querySelector('.table__body');
 
     // add listeners
     addButton.addEventListener('click', () => {
       formOverlay.classList.add('active');
     });
-    closeButton.addEventListener('click', () => {
-      formOverlay.classList.remove('active');
+
+    formOverlay.addEventListener('click', e => {
+      const target = e.target;
+      if (target === formOverlay ||
+          target.closest('.modal__close')) {
+        formOverlay.classList.remove('active');
+      }
     });
-    form.addEventListener('click', e => {
-      e.stopPropagation();
-    });
-    formOverlay.addEventListener('click', () => {
-      formOverlay.classList.remove('active');
+
+    // add delete functional
+    list.addEventListener('click', e => {
+      const target = e.target;
+      if (target.closest('.table__btn_del')) {
+        target.closest('tr').remove();
+        console.log('База данных:');
+        printBD([...list.children]);
+      }
     });
   };
 
