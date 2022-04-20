@@ -1,11 +1,16 @@
 'use strict';
 
 {
+  const getRandomNumber = () => (Math.floor(Math.random() *
+      (99999999999999 - 10000000000000 + 1) + 10000000000000));
+
   const createRow = (obj) => {
+    const count = document.querySelector('.table__body').childElementCount + 1;
+    const id = obj.id === undefined ? getRandomNumber() : obj.id;
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td class="table__cell">${obj.id}</td>
-        <td class="table__cell table__cell_left table__cell_name" data-id="24601654816512">
-        <span class="table__cell-id">id: 24601654816512</span>
+    tr.innerHTML = `<td class="table__cell">${count}</td>
+        <td class="table__cell table__cell_left table__cell_name" data-id="${id}">
+        <span class="table__cell-id">id: ${id}</span>
         ${obj.title}</td>
         <td class="table__cell table__cell_left">${obj.category}</td>
         <td class="table__cell">${obj.units}</td>
@@ -102,38 +107,122 @@
     });
   };
 
-  const init = () => {
-    renderGoods(goods);
+  const openModal = formOverlay => {
+    formOverlay.classList.add('active');
+  };
 
-    // get all elements
-    const formOverlay = document.querySelector('.overlay');
-    const form = document.querySelector('.overlay__modal');
-    const addButton = document.querySelector('.panel__add-goods');
-    const closeButton = document.querySelector('.modal__close');
-    const list = document.querySelector('.table__body');
+  const closeModal = (formOverlay, form) => {
+    form.reset();
+    formOverlay.classList.remove('active');
+  };
 
-    // add listeners
+  const recalculatePrice = (output, count, price) => {
+    output.value = `$ ${parseFloat(count * price).toFixed(2)}`;
+  };
+
+  const recalculateTotalPrice = (list, totalPrice) => {
+    let total = 0;
+    [...list.children].forEach((item) => {
+      total += Number(item.children[6].innerHTML.slice(1));
+    });
+
+    totalPrice.innerText = `$ ${parseFloat(total).toFixed(2)}`;
+  };
+
+  const modalControl = (addButton, formOverlay, form) => {
     addButton.addEventListener('click', () => {
-      formOverlay.classList.add('active');
+      openModal(formOverlay);
+      const id = getRandomNumber();
+      document.querySelector('.vendor-code__id').textContent = id;
     });
 
     formOverlay.addEventListener('click', e => {
       const target = e.target;
       if (target === formOverlay ||
           target.closest('.modal__close')) {
-        formOverlay.classList.remove('active');
+        closeModal(formOverlay, form);
       }
     });
+  };
 
-    // add delete functional
+  const delControl = (list, totalPrice) => {
     list.addEventListener('click', e => {
       const target = e.target;
       if (target.closest('.table__btn_del')) {
         target.closest('tr').remove();
         console.log('База данных:');
         printBD([...list.children]);
+        recalculateTotalPrice(list, totalPrice);
       }
     });
+  };
+
+  const checkboxControl = (checkbox, discountCode) => {
+    checkbox.addEventListener('change', e => {
+      e.preventDefault();
+      discountCode.toggleAttribute('disabled');
+      discountCode.value = '';
+    });
+  };
+
+  const formControl = (modal, formOverlay, form, list, totalPrice) => {
+    modal.addEventListener('submit', e => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const newGood = Object.fromEntries(formData);
+      newGood.id = document.querySelector('.vendor-code__id').textContent;
+      console.log('newGood: ', newGood);
+
+      renderGoods([newGood]);
+      closeModal(formOverlay, form);
+      recalculateTotalPrice(list, totalPrice);
+    });
+  };
+
+  const totalPriceControl = (form, count, price, output) => {
+    form.addEventListener('keyup', e => {
+      const target = e.target;
+      if (target === count || target === price) {
+        recalculatePrice(output, count.value, price.value);
+      }
+    });
+  };
+
+  const getAllElements = () => {
+    const formOverlay = document.querySelector('.overlay');
+    const modal = document.querySelector('.overlay__modal');
+    const addButton = document.querySelector('.panel__add-goods');
+    const closeButton = document.querySelector('.modal__close');
+    const list = document.querySelector('.table__body');
+    const checkbox = document.querySelector('input[name="discount"]');
+    const discountCode = document.querySelector('input[name="discount_count"]');
+    const output = document.querySelector('.modal__total-price');
+    const count = document.querySelector('input[name="count"]');
+    const price = document.querySelector('input[name="price"]');
+    const form = document.querySelector('.modal__form');
+    const totalPrice = document.querySelector('.crm__total-price');
+
+    return {
+      formOverlay, modal, addButton, closeButton, totalPrice,
+      list, checkbox, discountCode, output, count, price, form,
+    };
+  };
+
+  const init = () => {
+    renderGoods(goods);
+
+    const {
+      formOverlay, modal, addButton, closeButton, totalPrice,
+      list, checkbox, discountCode, output, count, price, form,
+    } = getAllElements();
+
+    recalculateTotalPrice(list, totalPrice);
+
+    modalControl(addButton, formOverlay, form);
+    delControl(list, totalPrice);
+    checkboxControl(checkbox, discountCode);
+    formControl(modal, formOverlay, form, list, totalPrice);
+    totalPriceControl(form, count, price, output);
   };
 
   window.crmInit = init;
