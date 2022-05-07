@@ -65,7 +65,7 @@ const goods =
 
 {
   const {modalControl, delControl, checkboxControl,
-    formControl, totalPriceControl} = control;
+    formControl, totalPriceControl, imgControl} = control;
 
   const init = () => {
     renderGoods(goods);
@@ -82,6 +82,7 @@ const goods =
     checkboxControl(checkbox, discountCode);
     formControl(modal, formOverlay, form, list, totalPrice);
     totalPriceControl(form, count, price, output);
+    imgControl(list);
   };
 
   window.crmInit = init;

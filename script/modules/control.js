@@ -13,6 +13,17 @@ const closeModal = (formOverlay, form) => {
   formOverlay.classList.remove('active');
 };
 
+const openWindow = (url) => {
+  const width = 470;
+  const height = 700;
+  const leftPosition = (window.screen.width / 2) - ((width / 2) + 10);
+  const topPosition = (window.screen.height / 2) - ((height / 2) + 50);
+  const win = open('about:blank', '', `popup,width=${width},height=${height},
+    resizable=no,left=${leftPosition},top=${topPosition},
+    screenX=${leftPosition},screenY=${topPosition}`);
+  win.document.write(`<img src="${url}">`);
+};
+
 const modalControl = (addButton, formOverlay, form) => {
   addButton.addEventListener('click', () => {
     openModal(formOverlay);
@@ -34,8 +45,6 @@ const delControl = (list, totalPrice) => {
     const target = e.target;
     if (target.closest('.table__btn_del')) {
       target.closest('tr').remove();
-      // console.log('База данных:');
-      // printBD([...list.children]);
       recalculateTotalPrice(list, totalPrice);
     }
   });
@@ -71,10 +80,20 @@ const totalPriceControl = (form, count, price, output) => {
   });
 };
 
+const imgControl = (list) => {
+  list.addEventListener('click', e => {
+    const target = e.target;
+    if (target.closest('.table__btn_pic')) {
+      openWindow(target.getAttribute('data-pic'));
+    }
+  });
+};
+
 export default {
   modalControl,
   delControl,
   checkboxControl,
   formControl,
   totalPriceControl,
+  imgControl,
 };
